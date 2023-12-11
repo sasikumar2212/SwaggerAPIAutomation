@@ -1,0 +1,82 @@
+    /*
+     * Automation Test Scenarios3: [Check Unilever loyalty point with login in Ecco-Jaeger website.]
+     * Load Ecco-Jaeger website in browser. After
+     * landing in the home page click login.
+     * login with credential
+     * search box will appear. search unilever product "knorr".
+     * add product to cart
+     * navigate to cart page
+     * validate the widget and widget content
+     * register widget
+     * place the order
+     * validate response widget and response message
+     * print the order number
+     */
+    @Test(priority = 5)
+    public void eccoJaeger_Scenario7_AddProductToCartAndValidateWidgetWillAppearwithEmailFlow() throws InterruptedException {
+        //load temp mail web site and get the email id
+        driver.switchTo().newWindow(WindowType.TAB);
+        driver.get("https://cryptogmail.com/");
+        String mailID = emailFlow.getMailID();
+        //System.out.println(mailID);
+        ArrayList<String> tabs = new ArrayList<String>(driver.getWindowHandles());
+        driver.switchTo().window(tabs.get(0));
+
+        //login and product add to cart
+        System.out.println("Test Case 3: Ecco-Jager application");
+        System.out.println("Verify one end to end flow where user logs into the application registers through widget places order and response widget is displayed. response widget content also to be validated.");
+        homePage.clickLoginButton().enterUserName().enterPassword().wholesalerLogin()
+                .enterProductnameInProductPage().clickProductSubmitInProductPage()
+                .clickProductCartBotton().clickShoppingCartButton().clickViewCartPageButton().validateTitle();
+        System.out.println("Login and product add to cart success");
+
+        //Validate widget content
+        //title
+        String expectedTitle = "Treueprogramm";
+        String actualTitle = widgetComponent.getTitle();
+        System.out.println(actualTitle);
+        Assert.assertEquals(actualTitle, expectedTitle);
+        //subtitle
+        String expectedSubTitle = "Sie sind nur einen Schritt davon entfernt Punkte zu sammeln!";
+        String actualSubTitle = widgetComponent.getSubTitle();
+        System.out.println(actualSubTitle);
+        Assert.assertEquals(actualSubTitle, expectedSubTitle);
+        //Consent Text
+        String expectedConsent = "Ich möchte über neue Produkte, Rezepte, Kochvorführungen, Inspirationen und exklusive Angebote von Unilever Schweiz via Newsletter auf dem Laufenden gehalten werden. Optional";
+        String actualConsent =widgetComponent.getConsentText();
+        System.out.println(actualConsent);
+        Assert.assertEquals(actualConsent, expectedConsent);
+        //Terms And Conditions Text
+        String expectedTc = "Ich habe die ";
+        String actualTc = widgetComponent.getTermsAndConditionsText();
+        System.out.println(actualTc);
+        Assert.assertTrue(actualTc.contains(expectedTc), "Cannot match footer");
+        System.out.println("Widget Validation Success");
+
+        //Widget Registration
+        String businessName = "Sasikumar";
+        String widgetUser = mailID;
+        widgetComponent.setBusinessName(businessName)
+                .setEmail(widgetUser)
+                .setConsent()
+                .acceptTermsAndConditions()
+                .submitWidget();
+        System.out.println("Test : Successfully registered in widget");
+        TestUtil.waitUntil(1000);
+        System.out.println("Widget Registration Success");
+
+        //Widget registration response
+        String regResponse = "Verbunden mit ufs.com. Sie sparen Punkte.";
+        WebElement actualResponse = widgetComponent.getMinimizedWidgetComponentContainerDev();
+        String actualRes = actualResponse.getText();
+        System.out.println("Expected Widget Response after register: "+actualRes);
+        Assert.assertEquals(actualRes, regResponse);
+
+        //place the order
+        shoppingCartPage.placeOrder().orderNumber();
+
+        //Validation for Email flow
+        driver.switchTo().window(tabs.get(1));
+
+        //System.out.println("Test Case 7: Ecco-Jager application -> Testing and Email Validation competed successfully");
+    }
